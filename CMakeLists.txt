@@ -20,8 +20,15 @@ if(0)
 	find_package(OpenMP REQUIRED)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIR})
+
+find_package(Eigen3)
+if(NOT Eigen3_FOUND)
+  # Attempt to find eigen_catkin
+  find_package(eigen_catkin REQUIRED)
+  include_directories(${eigen_catkin_INCLUDE_DIRS})
+else()
+  include_directories(${EIGEN3_INCLUDE_DIR})
+endif()
 
 if(MAKE_SCENE)
 	message(STATUS "Building ROVIO with openGL Scene Visualization")
