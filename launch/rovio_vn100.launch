@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<launch>
+  <node pkg="rovio" type="rovio_node" name="rovio" output="screen">
+  <param name="filter_config" value="$(find rovio)/cfg/rovio_vn100.info"/>
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="zed_left_to_cam0" args="0 0 0 0 0 0 /camera0 /zed_left 100"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="zed_left_to_cam1" args="0 0 0 0 0 0 /camera1 /zed_right 100"/>
+
+</launch>

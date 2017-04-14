@@ -139,12 +139,12 @@ class RovioNode{
   ros::Publisher pubMarkers_;          /**<Publisher: Ros line marker, indicating the depth uncertainty of a landmark.*/
   ros::Publisher pubExtrinsics_[mtState::nCam_];
   ros::Publisher pubImuBias_;
-
+  ros::Publisher repub_odom_;
   // Ros Messages
   geometry_msgs::TransformStamped transformMsg_;
   geometry_msgs::TransformStamped T_J_W_Msg_;
   nav_msgs::Odometry odometryMsg_;
-  geometry_msgs::PoseWithCovarianceStamped extrinsicsMsg_[mtState::nCam_];
+  geometry_msgs::PoseWithCovarianceStamped extrinsicsMsg_[mtState::nCam_], odom_msgs_;
   sensor_msgs::PointCloud2 pclMsg_;
   sensor_msgs::PointCloud2 patchMsg_;
   visualization_msgs::Marker markerMsg_;
@@ -218,7 +218,7 @@ class RovioNode{
       pubExtrinsics_[camID] = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("rovio/extrinsics" + std::to_string(camID), 1 );
     }
     pubImuBias_ = nh_.advertise<sensor_msgs::Imu>("rovio/imu_biases", 1 );
-
+    repub_odom_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("repub/odom",1);
     // Handle coordinate frame naming
     map_frame_ = "/map";
     world_frame_ = "/world";
@@ -705,6 +705,11 @@ class RovioNode{
           odometryMsg_.pose.pose.orientation.x = imuOutput_.qBW().x();
           odometryMsg_.pose.pose.orientation.y = imuOutput_.qBW().y();
           odometryMsg_.pose.pose.orientation.z = imuOutput_.qBW().z();
+          
+          odom_msgs_.header.seq = msgSeq_;
+          odom_msgs_.header.stamp = odometryMsg_.header.stamp;
+          odom_msgs_.pose = odometryMsg_.pose;
+
           for(unsigned int i=0;i<6;i++){
             unsigned int ind1 = mtOutput::template getId<mtOutput::_pos>()+i;
             if(i>=3) ind1 = mtOutput::template getId<mtOutput::_att>()+i-3;
@@ -730,6 +735,7 @@ class RovioNode{
             }
           }
           pubOdometry_.publish(odometryMsg_);
+          repub_odom_.publish(odom_msgs_);
         }
 
         // Send IMU pose message.
